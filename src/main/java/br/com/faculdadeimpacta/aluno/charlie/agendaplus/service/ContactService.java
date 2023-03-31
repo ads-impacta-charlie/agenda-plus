@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -23,5 +24,11 @@ public class ContactService {
     public Contact createContact(Contact contact) {
         log.info("creating new contact");
         return contactRepository.insert(contact);
+    }
+
+    public Contact findContact(UUID uuid) {
+        log.info("finding a contact by uuid {}", uuid);
+        return contactRepository.findById(uuid)
+                .orElse(null);
     }
 }

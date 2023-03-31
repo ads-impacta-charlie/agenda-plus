@@ -31,7 +31,11 @@ public class ContactHandler {
     @GetMapping(path = "/{id}")
     public ResponseEntity<Contact> getDetails(@PathVariable("id") UUID id) {
         log.info("request getDetails id: {}", id);
-        return ResponseEntity.notFound().build();
+        var contact = contactService.findContact(id);
+        if (contact == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(contact);
     }
 
     @PostMapping
