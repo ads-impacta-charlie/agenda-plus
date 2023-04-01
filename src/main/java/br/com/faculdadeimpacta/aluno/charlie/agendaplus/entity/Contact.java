@@ -3,16 +3,22 @@ package br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.UUID;
 
 @Data
+@Builder
 @Entity
 @Table(name = "contact")
 @Validated
+@NoArgsConstructor
+@AllArgsConstructor
 public class Contact {
     @Id
     @Column(name = "contact_uuid")

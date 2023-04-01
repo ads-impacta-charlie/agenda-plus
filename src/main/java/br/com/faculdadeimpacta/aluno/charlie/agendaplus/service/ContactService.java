@@ -1,6 +1,7 @@
 package br.com.faculdadeimpacta.aluno.charlie.agendaplus.service;
 
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.Contact;
+import br.com.faculdadeimpacta.aluno.charlie.agendaplus.exception.ContactNotFoundException;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.repository.ContactRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,20 @@ public class ContactService {
     public Contact findContact(UUID uuid) {
         log.info("finding a contact by uuid {}", uuid);
         return contactRepository.findById(uuid)
-                .orElse(null);
+                .orElseThrow(() -> new ContactNotFoundException(uuid));
+    }
+
+    public Contact updateContact(UUID uuid, Contact contact) {
+        log.info("updating contact {}", uuid);
+        var stored = findContact(uuid);
+        stored.setName(contact.getName());
+        stored.setData(contact.getData());
+        return contactRepository.save(stored);
+    }
+
+    public void deleteContact(UUID uuid) {
+        log.info("deleting contact {}", uuid);
+        var contact = findContact(uuid);
+        contactRepository.delete(contact);
     }
 }
