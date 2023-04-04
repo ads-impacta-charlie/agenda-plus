@@ -19,6 +19,7 @@ import java.util.UUID;
 @RequestMapping("/contact")
 @Slf4j
 @RequiredArgsConstructor
+@CrossOrigin("http://localhost:3000")
 public class ContactHandler {
 
     private final ContactService contactService;
