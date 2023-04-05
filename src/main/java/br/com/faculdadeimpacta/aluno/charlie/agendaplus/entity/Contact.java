@@ -26,7 +26,7 @@ public class Contact {
     private UUID uuid;
     @Size(min = 3, message = "Name must have at least 3 characters")
     private String name;
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "contact_uuid", referencedColumnName = "contact_uuid", nullable = false)
     @Valid
     private List<ContactData> data;

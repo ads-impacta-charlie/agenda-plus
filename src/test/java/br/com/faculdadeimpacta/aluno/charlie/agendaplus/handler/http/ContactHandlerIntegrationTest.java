@@ -15,6 +15,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -137,6 +138,39 @@ public class ContactHandlerIntegrationTest {
                 .isEqualTo(HttpStatus.NO_CONTENT);
     }
 
+    @Test
+    public void shouldDeleteContactData() {
+        var expected = createContact();
+        expected.getData().add(ContactData.builder()
+                .category(ContactDataCategory.BUSINESS)
+                .type(ContactDataType.EMAIL)
+                .value("test@example.com")
+                .build());
+        repository.save(expected);
+        expected.getData().remove(0);
+
+        var response = this.restTemplate.exchange(
+                baseUrl + "/" + expected.getUuid(),
+                HttpMethod.PUT,
+                new HttpEntity<>(expected),
+                Contact.class);
+
+        assertThat(response.getStatusCode())
+                .isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getData())
+                .hasSize(1);
+        assertThat(response.getBody().getData().get(0).getType())
+                .isEqualTo(ContactDataType.EMAIL);
+
+        var saved = repository.findById(expected.getUuid());
+
+        assertThat(saved).isPresent();
+        assertThat(saved.get().getData()).hasSize(1);
+        assertThat(saved.get().getData().get(0).getType())
+                .isEqualTo(ContactDataType.EMAIL);
+    }
+
     private ResponseEntity<List<Contact>> getContactList() {
         var request = RequestEntity.get(baseUrl).build();
         return this.restTemplate.exchange(request, new ParameterizedTypeReference<>() {
@@ -149,9 +183,11 @@ public class ContactHandlerIntegrationTest {
                 .type(ContactDataType.TELEPHONE)
                 .value("+1 234 5678901")
                 .build();
+        var data = new ArrayList<ContactData>();
+        data.add(contactData);
         return Contact.builder()
                 .name(CONTACT_NAME)
-                .data(List.of(contactData))
+                .data(data)
                 .build();
     }
 }
