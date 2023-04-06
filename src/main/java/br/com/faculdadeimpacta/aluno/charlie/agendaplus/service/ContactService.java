@@ -37,6 +37,7 @@ public class ContactService {
         log.info("updating contact {}", uuid);
         var stored = findContact(uuid);
         stored.setName(contact.getName());
+        stored.setAvatarUrl(contact.getAvatarUrl());
         stored.getData().clear();
         stored.getData().addAll(contact.getData());
         return contactRepository.save(stored);

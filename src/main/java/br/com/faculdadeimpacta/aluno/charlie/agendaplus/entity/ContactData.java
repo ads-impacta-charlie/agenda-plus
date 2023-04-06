@@ -33,5 +33,6 @@ public class ContactData {
     private String value;
     @JsonIgnore
     @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "contact_uuid", referencedColumnName = "contact_uuid", nullable = false, insertable = false, updatable = false)
     private Contact contact;
 }
