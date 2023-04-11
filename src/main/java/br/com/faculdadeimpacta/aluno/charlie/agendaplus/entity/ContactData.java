@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.UUID;
 
@@ -17,6 +14,7 @@ import java.util.UUID;
 @Table(name = "contact_data")
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString(exclude = "contact")
 public class ContactData {
     @Id
     @Column(name = "contact_data_uuid")
@@ -32,7 +30,7 @@ public class ContactData {
     @NotBlank
     private String value;
     @JsonIgnore
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn(name = "contact_uuid", referencedColumnName = "contact_uuid", nullable = false, insertable = false, updatable = false)
     private Contact contact;
 }
