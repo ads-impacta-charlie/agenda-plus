@@ -1,5 +1,6 @@
 package br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
@@ -31,4 +32,8 @@ public class Contact {
     @JoinColumn(name = "contact_uuid", referencedColumnName = "contact_uuid", nullable = false)
     @Valid
     private List<ContactData> data;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_uuid", referencedColumnName = "user_uuid", nullable = false, updatable = false)
+    @JsonIgnore
+    private User user;
 }
