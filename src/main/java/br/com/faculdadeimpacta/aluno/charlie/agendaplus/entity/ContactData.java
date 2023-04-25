@@ -4,7 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
@@ -14,23 +17,26 @@ import java.util.UUID;
 @Table(name = "contact_data")
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = "contact")
 public class ContactData {
     @Id
     @Column(name = "contact_data_uuid")
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID uuid;
+
     @Enumerated(EnumType.STRING)
     @NotNull
     private ContactDataType type;
+
     @Enumerated(EnumType.STRING)
     @NotNull
     private ContactDataCategory category;
+
     @Column(name = "contact_value")
     @NotBlank
     private String value;
+
     @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "contact_uuid", referencedColumnName = "contact_uuid", nullable = false, insertable = false, updatable = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "contact_uuid", referencedColumnName = "contact_uuid")
     private Contact contact;
 }

@@ -1,15 +1,14 @@
 package br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.springframework.validation.annotation.Validated;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,20 +19,35 @@ import java.util.UUID;
 @Validated
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Contact {
     @Id
     @Column(name = "contact_uuid")
     @GeneratedValue(strategy = GenerationType.UUID)
+    @ToString.Include
+    @EqualsAndHashCode.Include
     private UUID uuid;
+
     @Size(min = 3, message = "Name must have at least 3 characters")
     private String name;
+
     private String avatarUrl;
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "contact_uuid", referencedColumnName = "contact_uuid", nullable = false)
+
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "contact", orphanRemoval = true)
     @Valid
     private List<ContactData> data;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_uuid", referencedColumnName = "user_uuid", nullable = false, updatable = false)
+
+    @Nullable
+    @JsonIgnore
+    private Instant deletedAt;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_uuid")
     @JsonIgnore
     private User user;
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "contact")
+    private List<ContactAudit> auditTrail;
 }

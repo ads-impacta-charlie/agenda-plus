@@ -3,6 +3,7 @@ package br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -11,8 +12,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Data
+@Builder
 @Entity
-@Table(name = "user", indexes = {@Index(unique = true, columnList = "firebase_user_id")})
+@Table(name = "users", indexes = {@Index(unique = true, columnList = "firebase_user_id")})
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
@@ -20,11 +22,12 @@ public class User {
     @Column(name = "user_uuid")
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID uuid;
+
     @Column(name = "firebase_user_id")
     @NotNull
     private String firebaseUserId;
-    @OneToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_uuid", referencedColumnName = "user_uuid", nullable = false, insertable = false, updatable = false)
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
     private List<Contact> contacts;
 
     @Override

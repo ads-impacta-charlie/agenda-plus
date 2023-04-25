@@ -5,6 +5,7 @@ import br.com.faculdadeimpacta.aluno.charlie.agendaplus.repository.UserRepositor
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -22,5 +23,10 @@ public class UserService {
                     user.setFirebaseUserId(firebaseUserId);
                     return userRepository.save(user);
                 });
+    }
+
+    public User getCurrentUser() {
+        var firebaseId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return findOrCreateUserByFirebaseUserId(firebaseId);
     }
 }

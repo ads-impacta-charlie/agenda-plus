@@ -4,7 +4,6 @@ import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.User;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.MethodParameter;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -25,7 +24,6 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
             ModelAndViewContainer mavContainer,
             NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory) {
-        var firebaseId = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userService.findOrCreateUserByFirebaseUserId(firebaseId);
+        return userService.getCurrentUser();
     }
 }
