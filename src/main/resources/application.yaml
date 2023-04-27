@@ -7,3 +7,5 @@ spring:
           audiences:
             - agenda-plus-cc653
           issuer-uri: "https://securetoken.google.com/agenda-plus-cc653"
+          jws-algorithms:
+            - RS256

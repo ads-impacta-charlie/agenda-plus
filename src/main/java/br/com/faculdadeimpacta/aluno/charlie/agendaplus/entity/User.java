@@ -1,5 +1,6 @@
 package br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @Table(name = "users", indexes = {@Index(unique = true, columnList = "firebase_user_id")})
 @NoArgsConstructor
 @AllArgsConstructor
+@Hidden
 public class User {
     @Id
     @Column(name = "user_uuid")
