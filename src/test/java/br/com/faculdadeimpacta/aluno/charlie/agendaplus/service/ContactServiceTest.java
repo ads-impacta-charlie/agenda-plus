@@ -144,6 +144,9 @@ class ContactServiceTest {
         doReturn(Optional.of(contact))
                 .when(contactRepository)
                 .findOne(any());
+        doReturn(new ContactAudit())
+                .when(contactAuditRepository)
+                .save(any());
 
         contactService.deleteContact(user, contact.getUuid());
 
