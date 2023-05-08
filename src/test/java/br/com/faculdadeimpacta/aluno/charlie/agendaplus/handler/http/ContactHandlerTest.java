@@ -5,8 +5,11 @@ import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.*;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.repository.ContactAuditRepository;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.repository.ContactRepository;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.repository.UserRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Streams;
 import jakarta.persistence.EntityManager;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -21,8 +24,12 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.IntStream;
 
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -202,6 +209,95 @@ public class ContactHandlerTest {
             assertThat(saved).isPresent();
             assertThat(saved.get().getData())
                     .hasSize(2);
+        }
+
+        private static final int DUPLICATE_COUNT = 3;
+        @Test
+        public void shouldReturnDuplicates() throws Exception {
+            var contact = createContact();
+            contact.setName(CONTACT_NAME + " not duplicate");
+            contact.getData().get(0).setValue("definitely not a duplicate");
+            contact = contactRepository.save(contact);
+            contactRepository.saveAll(
+                    IntStream.range(0, DUPLICATE_COUNT)
+                            .mapToObj(i -> createContact())
+                            .toList());
+            var duplicateByData = createContact();
+            duplicateByData.setName(CONTACT_NAME + " duplicate");
+            contactRepository.save(duplicateByData);
+
+            var response = mockMvc.perform(get("/contact/duplicates")
+                            .accept(MediaType.APPLICATION_JSON)
+                            .with(firebaseUser()))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            var data = objectMapper.readValue(response, new TypeReference<Map<UUID, List<UUID>>>(){});
+
+            assertThat(data)
+                    .hasSize(1)
+                    .doesNotContainKey(contact.getUuid());
+            assertThat(data.entrySet().stream().findAny())
+                    .isPresent()
+                    .get()
+                    .extracting(Map.Entry::getValue, as(InstanceOfAssertFactories.LIST))
+                    .hasSize(3);
+        }
+
+        @Test
+        public void shouldDeduplicate() throws Exception {
+            var contactBatch = Streams.stream(contactRepository.saveAll(
+                    IntStream.range(0, DUPLICATE_COUNT)
+                            .mapToObj(i -> createContact())
+                            .toList())).toList();
+            var duplicateByData = createContact();
+            duplicateByData.setName(CONTACT_NAME + " duplicate");
+            duplicateByData.getData().add(ContactData.builder()
+                    .contact(duplicateByData)
+                    .type(ContactDataType.EMAIL)
+                    .category(ContactDataCategory.PERSONAL)
+                    .value("foo@bar.com")
+                    .build());
+            contactRepository.save(duplicateByData);
+
+            var request = new ContactMergeRequest();
+            request.setEntries(new ArrayList<>(contactBatch.stream()
+                    .skip(1L)
+                    .map(contact -> new ContactMergeRequest.MergeEntry(contact.getUuid(), MergeType.FULL))
+                    .toList()));
+            request.getEntries().add(new ContactMergeRequest.MergeEntry(duplicateByData.getUuid(), MergeType.ONLY_DATA));
+
+            var response = mockMvc.perform(post("/contact/merge/" + contactBatch.get(0).getUuid())
+                            .accept(MediaType.APPLICATION_JSON)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsBytes(request))
+                            .with(firebaseUser()))
+                    .andExpect(status().isOk())
+                    .andReturn()
+                    .getResponse()
+                    .getContentAsString();
+
+            var data = objectMapper.readValue(response, Contact.class);
+
+            assertThat(data.getUuid()).isEqualTo(contactBatch.get(0).getUuid());
+            assertThat(data.getName()).isEqualTo(contactBatch.get(0).getName());
+            assertThat(data.getData()).hasSize(2);
+            assertThat(data.getData())
+                    .filteredOn(c -> c.getType().equals(ContactDataType.TELEPHONE))
+                    .hasSize(1)
+                    .element(0)
+                    .matches(d -> d.getUuid().equals(contactBatch.get(0).getData().get(0).getUuid()))
+                    .matches(d -> d.getCategory().equals(contactBatch.get(0).getData().get(0).getCategory()))
+                    .matches(d -> d.getValue().equals(contactBatch.get(0).getData().get(0).getValue()));
+            assertThat(data.getData())
+                    .filteredOn(c -> c.getType().equals(ContactDataType.EMAIL))
+                    .hasSize(1)
+                    .element(0)
+                    .matches(d -> d.getUuid().equals(duplicateByData.getData().get(1).getUuid()))
+                    .matches(d -> d.getCategory().equals(duplicateByData.getData().get(1).getCategory()))
+                    .matches(d -> d.getValue().equals(duplicateByData.getData().get(1).getValue()));
         }
     }
 
