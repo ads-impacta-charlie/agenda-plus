@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -32,6 +33,10 @@ public class User {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
     private List<Contact> contacts;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user")
+    @MapKey(name = "key")
+    private Map<String, UserPreferences> preferences;
+
     @Override
     public String toString() {
         return Optional.ofNullable(uuid)
@@ -39,3 +44,4 @@ public class User {
                 .orElse("<nil uuid>");
     }
 }
+

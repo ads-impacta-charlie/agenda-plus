@@ -29,6 +29,7 @@ public class ContactService {
     private final ContactRepository contactRepository;
     private final ContactAuditRepository contactAuditRepository;
     private final ObjectMapper objectMapper;
+    private final PhoneValidationService phoneValidationService;
 
     @Transactional(readOnly = true)
     public List<Contact> listContacts(User user) {
@@ -40,6 +41,7 @@ public class ContactService {
     public Contact createContact(User user, Contact contact) {
         log.info("creating new contact for user {}", user);
         contact.setUser(user);
+        validatePhoneNumber(user, contact);
         var saved = contactRepository.insert(contact);
         contactAuditRepository.save(createContactAudit(saved, user, AuditType.CREATED));
         return saved;
@@ -59,6 +61,7 @@ public class ContactService {
     public Contact updateContact(User user, UUID uuid, Contact contact) {
         log.info("updating contact {} for user {}", uuid, user);
         var stored = findContact(user, uuid);
+        validatePhoneNumber(user, contact);
         copyContact(contact, stored);
         return updateContact(user, stored);
     }
@@ -146,6 +149,12 @@ public class ContactService {
         target.getData().forEach(data -> data.setContact(target));
     }
 
+    private void validatePhoneNumber(User user, Contact contact) {
+        contact.getData().stream()
+                .filter(data -> data.getType().equals(ContactDataType.TELEPHONE))
+                .forEach(data -> phoneValidationService.validatePhoneNumber(user, data.getValue()));
+    }
+  
     private static void mergeContact(Contact source, Contact target) {
         target.setName(source.getName());
         target.setAvatarUrl(source.getAvatarUrl());
