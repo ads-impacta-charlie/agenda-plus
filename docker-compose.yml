@@ -1,0 +1,23 @@
+version: "3.1"
+services:
+  db:
+    image: mariadb
+    restart: "always"
+    environment:
+      MARIADB_DATABASE: agendaplus
+      MARIADB_ROOT_PASSWORD: my-secret-pw
+    networks:
+      - agenda-plus
+  api:
+    build:
+      context: .
+    environment:
+      SPRING_PROFILES_ACTIVE: mariadb
+      SPRING_DATASOURCE_URL: jdbc:mariadb://db:3306/agendaplus
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: my-secret-pw
+    networks:
+      - agenda-plus
+
+networks:
+  agenda-plus:
