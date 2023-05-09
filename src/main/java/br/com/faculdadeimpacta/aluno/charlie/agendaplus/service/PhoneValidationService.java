@@ -56,6 +56,7 @@ public class PhoneValidationService {
     private String getDefaultRegionForUser(User user) {
         return Optional.ofNullable(user.getPreferences())
                 .map(p -> p.get(USER_PREFERENCE_DEFAULT_REGION_KEY))
+                .filter(p -> p.getDeletedAt() == null)
                 .map(UserPreferences::getValue)
                 .orElse(DEFAULT_REGION);
     }
