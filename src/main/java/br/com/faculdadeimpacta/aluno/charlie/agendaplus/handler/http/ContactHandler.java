@@ -1,6 +1,7 @@
 package br.com.faculdadeimpacta.aluno.charlie.agendaplus.handler.http;
 
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.Contact;
+import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.ContactMergeRequest;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.User;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.View;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.exception.ContactNotFoundException;
@@ -19,6 +20,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -83,6 +86,24 @@ public class ContactHandler {
     public Contact edit(User user, @PathVariable("id") UUID id, @RequestBody Contact contact) {
         log.info("request edit id: {}; contact {}", id, contact);
         return contactService.updateContact(user, id, contact);
+    }
+
+    @GetMapping(path = "/duplicates")
+    @Operation(
+            description = "Finds all duplicates by their name or contact data",
+            summary = "Finds all duplicates by their name or contact data")
+    public Map<UUID, Set<UUID>> findDuplicates(User user) {
+        log.info("request find duplicates");
+        return contactService.findDuplicates(user);
+    }
+
+    @PostMapping(path = "/merge/{id}")
+    @Operation(
+            description = "Merge the given contacts from the body into the contact given as parameter",
+            summary = "Merge the given contacts from the body into the contact given as parameter")
+    public Contact merge(User user, @PathVariable("id") UUID id, @RequestBody ContactMergeRequest contactMergeRequest) {
+        log.info("request merge contacts into {}", id);
+        return contactService.mergeContacts(user, id, contactMergeRequest.getEntries());
     }
 
     @ExceptionHandler(ContactNotFoundException.class)

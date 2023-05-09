@@ -25,6 +25,7 @@ public class SpringSecurityConfiguration implements WebMvcConfigurer {
         // any method that adds another configurer
         // must be done in the init method
         http.csrf().disable()
+                .cors().and()
                 .authorizeHttpRequests(customizer -> customizer
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .anyRequest().authenticated())
