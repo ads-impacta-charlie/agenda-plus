@@ -4,6 +4,7 @@ import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.Contact;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.User;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.View;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.exception.ContactNotFoundException;
+import br.com.faculdadeimpacta.aluno.charlie.agendaplus.exception.InvalidPhoneNumberException;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.service.ContactService;
 import com.fasterxml.jackson.annotation.JsonView;
 import io.swagger.v3.oas.annotations.Operation;
@@ -88,6 +89,13 @@ public class ContactHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @JsonView(View.Public.class)
     public ContactNotFoundException handleContactNotFoundException(ContactNotFoundException e) {
+        return e;
+    }
+
+    @ExceptionHandler(InvalidPhoneNumberException.class)
+    @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+    @JsonView(View.Public.class)
+    public InvalidPhoneNumberException handleInvalidPhoneNumberException(InvalidPhoneNumberException e) {
         return e;
     }
 }

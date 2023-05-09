@@ -1,9 +1,6 @@
 package br.com.faculdadeimpacta.aluno.charlie.agendaplus.service;
 
-import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.AuditType;
-import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.Contact;
-import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.ContactAudit;
-import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.User;
+import br.com.faculdadeimpacta.aluno.charlie.agendaplus.entity.*;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.exception.ContactNotFoundException;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.repository.ContactAuditRepository;
 import br.com.faculdadeimpacta.aluno.charlie.agendaplus.repository.ContactRepository;
@@ -28,6 +25,7 @@ public class ContactService {
     private final ContactRepository contactRepository;
     private final ContactAuditRepository contactAuditRepository;
     private final ObjectMapper objectMapper;
+    private final PhoneValidationService phoneValidationService;
 
     @Transactional(readOnly = true)
     public List<Contact> listContacts(User user) {
@@ -39,6 +37,7 @@ public class ContactService {
     public Contact createContact(User user, Contact contact) {
         log.info("creating new contact for user {}", user);
         contact.setUser(user);
+        validatePhoneNumber(user, contact);
         var saved = contactRepository.insert(contact);
         contactAuditRepository.save(createContactAudit(saved, user, AuditType.CREATED));
         return saved;
@@ -58,6 +57,7 @@ public class ContactService {
     public Contact updateContact(User user, UUID uuid, Contact contact) {
         log.info("updating contact {} for user {}", uuid, user);
         var stored = findContact(user, uuid);
+        validatePhoneNumber(user, contact);
         copyContact(contact, stored);
         var afterSave = contactRepository.save(stored);
         log.info("contact {} saved", user);
@@ -81,6 +81,12 @@ public class ContactService {
         target.getData().clear();
         target.getData().addAll(source.getData());
         target.getData().forEach(data -> data.setContact(target));
+    }
+
+    private void validatePhoneNumber(User user, Contact contact) {
+        contact.getData().stream()
+                .filter(data -> data.getType().equals(ContactDataType.TELEPHONE))
+                .forEach(data -> phoneValidationService.validatePhoneNumber(user, data.getValue()));
     }
 
     private ContactAudit createContactAudit(Contact contact, User user, AuditType type) {
