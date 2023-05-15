@@ -164,9 +164,8 @@ public class ContactService {
     private static void mergeContactData(Contact contact, Contact target) {
         var notDuplicated = contact.getData().stream()
                 .filter(data -> target.getData().stream().noneMatch(contactDataMatchPredicate(data)))
+                .map(data -> data.toBuilder().uuid(null).contact(target).build())
                 .toList();
-        notDuplicated.forEach(data -> data.setContact(target));
-        contact.getData().removeIf(notDuplicated::contains);
         target.getData().addAll(notDuplicated);
     }
 
