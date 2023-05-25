@@ -34,6 +34,8 @@ public class Contact {
 
     private String avatarUrl;
 
+    private Boolean favorite;
+
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "contact", orphanRemoval = true)
     @Valid
     private List<ContactData> data;
