@@ -88,6 +88,13 @@ public class ContactHandler {
         return contactService.updateContact(user, id, contact);
     }
 
+    @PutMapping(path = "/{id}/favorite")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void setFavorite(User user, @PathVariable("id") UUID id, @RequestParam("favorite") Boolean favorite) {
+        log.info("request set contact as favorite: {} {}", id, favorite);
+        contactService.setContactAsFavorite(user, id, favorite);
+    }
+
     @GetMapping(path = "/duplicates")
     @Operation(
             description = "Finds all duplicates by their name or contact data",

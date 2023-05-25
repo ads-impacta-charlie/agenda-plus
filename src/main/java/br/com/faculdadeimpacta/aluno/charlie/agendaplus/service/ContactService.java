@@ -118,6 +118,13 @@ public class ContactService {
         return updateContact(user, targetContact);
     }
 
+    @Transactional
+    public void setContactAsFavorite(User user, UUID id, Boolean favorite) {
+        var contact = findContact(user, id);
+        contact.setFavorite(favorite);
+        updateContact(user, contact);
+    }
+
     private Contact updateContact(User user, Contact contact) {
         var afterSave = contactRepository.save(contact);
         log.info("contact {} saved", contact.getUuid());

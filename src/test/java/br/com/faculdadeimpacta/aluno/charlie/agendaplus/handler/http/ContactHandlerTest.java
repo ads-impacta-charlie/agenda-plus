@@ -298,6 +298,24 @@ public class ContactHandlerTest {
                     .matches(d -> d.getCategory().equals(duplicateByData.getData().get(1).getCategory()))
                     .matches(d -> d.getValue().equals(duplicateByData.getData().get(1).getValue()));
         }
+
+        @Test
+        public void shouldSetContactAsFavorite() throws Exception {
+            var expected = createContact();
+            contactRepository.save(expected);
+
+            mockMvc.perform(put("/contact/" + expected.getUuid() + "/favorite?favorite=true")
+                            .accept(MediaType.APPLICATION_JSON)
+                            .with(firebaseUser()))
+                    .andExpect(status().isNoContent());
+
+            var contact = contactRepository.findById(expected.getUuid());
+            assertThat(contact)
+                    .isPresent()
+                    .get()
+                    .extracting(Contact::getFavorite)
+                    .isEqualTo(Boolean.TRUE);
+        }
     }
 
     private ResultActions getContactList() throws Exception {
