@@ -295,7 +295,6 @@ public class ContactHandlerTest {
                     .filteredOn(c -> c.getType().equals(ContactDataType.EMAIL))
                     .hasSize(1)
                     .element(0)
-                    .matches(d -> d.getUuid().equals(duplicateByData.getData().get(1).getUuid()))
                     .matches(d -> d.getCategory().equals(duplicateByData.getData().get(1).getCategory()))
                     .matches(d -> d.getValue().equals(duplicateByData.getData().get(1).getValue()));
         }

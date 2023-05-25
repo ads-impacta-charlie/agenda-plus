@@ -12,32 +12,36 @@ import java.util.stream.Stream;
 
 public interface ContactRepository extends CrudRepository<Contact, UUID>, JpaSpecificationExecutor<Contact> {
     @Query("""
-    SELECT
-        c.uuid AS contactUuid
-        , c2.uuid AS duplicateUuid
-    FROM Contact c
-         LEFT JOIN Contact c2 ON c.name = c2.name AND c.uuid != c2.uuid
-    WHERE
-        c.user = :user
-        AND c2.user = :user
-    """)
+            SELECT
+                c.uuid AS contactUuid
+                , c2.uuid AS duplicateUuid
+            FROM Contact c
+                 LEFT JOIN Contact c2 ON c.name = c2.name AND c.uuid != c2.uuid
+            WHERE
+                c.user = :user
+                AND c2.user = :user
+                AND c.deletedAt IS NULL
+                AND c2.deletedAt IS NULL
+            """)
     Stream<Duplicate> findDuplicatesByName(User user);
 
     @Query("""
     SELECT
         c.uuid AS contactUuid
         , c2.uuid AS duplicateUuid
-    FROM Contact c
-         INNER JOIN ContactData cd ON cd.contact = c
-         LEFT JOIN ContactData cd2 ON
-                cd.uuid != cd2.uuid
-                AND cd2.value = cd.value
-                AND cd2.type = cd.type
-         LEFT JOIN Contact c2 ON c2 = cd2.contact
-    WHERE
-        c.user = :user
-        AND c2.user = :user
-    """)
+            FROM Contact c
+                 INNER JOIN ContactData cd ON cd.contact = c
+                 LEFT JOIN ContactData cd2 ON
+                        cd.uuid != cd2.uuid
+                        AND cd2.value = cd.value
+                        AND cd2.type = cd.type
+                 LEFT JOIN Contact c2 ON c2 = cd2.contact
+            WHERE
+                c.user = :user
+                AND c2.user = :user
+                AND c.deletedAt IS NULL
+                AND c2.deletedAt IS NULL
+            """)
     Stream<Duplicate> findDuplicatesByContactData(User user);
 
     default Contact insert(Contact contact) {
