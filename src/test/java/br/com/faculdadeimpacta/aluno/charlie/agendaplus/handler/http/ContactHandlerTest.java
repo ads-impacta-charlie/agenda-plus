@@ -110,6 +110,24 @@ public class ContactHandlerTest {
         }
 
         @Test
+        public void shouldCreateContactInBulk() throws Exception {
+            var contacts = new ArrayList<Contact>();
+            for (int i = 0; i < DUPLICATE_COUNT; i++) {
+                contacts.add(createContact());
+            }
+
+            mockMvc.perform(post("/contact/bulk")
+                            .accept(MediaType.APPLICATION_JSON)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsBytes(contacts))
+                            .with(firebaseUser()))
+                    .andExpectAll(
+                            status().isOk(),
+                            jsonPath("$").isArray(),
+                            jsonPath("$[0].uuid").isNotEmpty());
+        }
+
+        @Test
         public void listShouldContainCreatedContact() throws Exception {
             var contact = contactRepository.save(createContact());
             getContactList()
