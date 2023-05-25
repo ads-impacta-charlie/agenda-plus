@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -53,5 +55,20 @@ public interface ContactRepository extends CrudRepository<Contact, UUID>, JpaSpe
             });
         }
         return save(contact);
+    }
+
+    default List<Contact> insertAll(List<Contact> contacts) {
+        contacts.forEach(contact -> {
+            contact.setUuid(null);
+            if (contact.getData() != null) {
+                contact.getData().forEach(data -> {
+                    data.setContact(contact);
+                    data.setUuid(null);
+                });
+            }
+        });
+        var savedContacts = new ArrayList<Contact>(contacts.size());
+        saveAll(contacts).forEach(savedContacts::add);
+        return savedContacts;
     }
 }

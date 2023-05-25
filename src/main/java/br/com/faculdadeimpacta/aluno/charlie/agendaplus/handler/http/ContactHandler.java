@@ -68,6 +68,16 @@ public class ContactHandler {
         return contactService.createContact(user, contact);
     }
 
+    @PostMapping(path = "/bulk", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(
+            description = "Create new contacts in bulk",
+            summary = "Create new contacts in bulk")
+    public List<Contact> create(User user, @Valid @RequestBody List<Contact> contacts) {
+        log.info("request create in bulk");
+        return contactService.createContactBulk(user, contacts);
+    }
+
     @DeleteMapping(path = "/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(

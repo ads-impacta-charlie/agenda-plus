@@ -47,6 +47,18 @@ public class ContactService {
         return saved;
     }
 
+    @Transactional
+    public List<Contact> createContactBulk(User user, List<Contact> contacts) {
+        log.info("creating contacts in bulk for user {}", user);
+        contacts.forEach(contact -> {
+            contact.setUser(user);
+            validatePhoneNumber(user, contact);
+        });
+        var saved = contactRepository.insertAll(contacts);
+        saved.forEach(contact -> contactAuditRepository.save(createContactAudit(contact, user, AuditType.CREATED)));
+        return saved;
+    }
+
     @Transactional(readOnly = true)
     public Contact findContact(User user, UUID uuid) {
         log.info("finding a contact by uuid {} for user {}", uuid, user);
@@ -72,7 +84,6 @@ public class ContactService {
         var contact = findContact(user, uuid);
         deleteContact(user, contact);
     }
-
 
     @Transactional
     public Map<UUID, Set<UUID>> findDuplicates(User user) {
